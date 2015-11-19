@@ -2,7 +2,7 @@
 
 Accept payments from major credit cards on your WooCommerce website with Transaction Services (TrxServices).
 
-Currently supports the following types of transactions: 
+The plugin currently supports the following types of transactions: 
 
 * Credit Sale
 * Credit Return
@@ -36,4 +36,6 @@ define( 'TRXSERVICES_ALGORITHM_KEY',      'YOUR-ALGORITHM-KEY' );
 define( 'TRXSERVICES_ALGORITHM_IV',       'YOUR-ALGORITHM-IV' );
 define( 'TRXSERVICES_CLIENT',             'YOUR-CLIENT-ID' );
 define( 'TRXSERVICES_SOURCE',             'YOUR-SOURCE' );
+
+5. Enable the payment gateway from the WooCommerce Checkout settings page.
 
