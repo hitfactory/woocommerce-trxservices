@@ -240,11 +240,9 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
       $mofile_global = WP_LANG_DIR . '/' . $this->text_domain . '/' . $mofile;
 
       if ( file_exists( $mofile_global ) ) {
-        // Look in global /wp-content/languages/plugin-name/ folder
         load_textdomain( $this->text_domain, $mofile_global );
       }
       else if ( file_exists( $mofile_local ) ) {
-        // Look in local /wp-content/plugins/plugin-name/languages/ folder
         load_textdomain( $this->text_domain, $mofile_local );
       }
       else {
