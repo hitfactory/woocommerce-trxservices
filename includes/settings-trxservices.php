@@ -51,7 +51,7 @@ return array(
     'default'     => 'yes'
   ),
   'mode' => array(
-    'title'       => __( 'Tran Action', 'woocommerce' ),
+    'title'       => __( 'Mode', 'woocommerce' ),
     'type'        => 'select',
     'class'       => 'wc-enhanced-select',
     'description' => __( 'Credit Sale performs a credit authorization and captures it for settlement in one request. Credit Auth only requests a credit authorization.', 'woocommerce' ),
