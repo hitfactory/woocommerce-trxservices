@@ -50,4 +50,16 @@ return array(
     'description' => __( 'Place the payment gateway in sandbox mode (real payments will not be taken).', 'woocommerce-trxservices' ),
     'default'     => 'yes'
   ),
+  'mode' => array(
+    'title'       => __( 'Tran Action', 'woocommerce' ),
+    'type'        => 'select',
+    'class'       => 'wc-enhanced-select',
+    'description' => __( 'Credit Sale performs a credit authorization and captures it for settlement in one request. Credit Auth only requests a credit authorization.', 'woocommerce' ),
+    'default'     => 'creditsale',
+    'desc_tip'    => true,
+    'options'     => array(
+      'creditsale' => __( 'Credit Sale', 'woocommerce-trxservices' ),
+      'creditauth' => __( 'Credit Auth', 'woocommerce-trxservices' )
+    )
+  ),
 );
