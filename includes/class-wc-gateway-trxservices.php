@@ -111,10 +111,10 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
 
     if ( is_admin() ) {
       add_action( 'admin_notices', array( $this, 'checks' ) );
-      add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'receipt_page' ) );
       add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
     }
 
+    add_action( 'woocommerce_receipt_' . $this->id, array( $this, 'receipt_page' ) );
     add_action( 'woocommerce_thankyou_' . $this->id, array( $this, 'thankyou_page' ) );
 
     // Customer Emails.
@@ -146,7 +146,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
    * @access public
    */
   public function checks() {
-    $this->log('running checks');
+
     if ( $this->enabled == 'no' ) {
       return;
     }
@@ -251,16 +251,6 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
 
     // Include custom payment fields.
     include_once( WC_TrxServices()->plugin_path() . '/includes/views/html-payment-fields.php' );
-  }
-
-   /**
-   * Add Order Action
-   *
-   * @access public
-   */
-  public function add_order_actions($actions) {
-    $actions['trxservices_creditcapture'] = __( 'Credit Capture', 'woocommerce-trxservices' );
-    return $actions;
   }
 
   /**
@@ -467,6 +457,9 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     $order->update_status( 'refunded', __( 'Order refunded via TrxServices.', 'woocommerce-trxservices' ) );
     $order->add_order_note( sprintf( __( 'Refunded %s (GUID: %s)', 'woocommerce-trxservices' ), $amount, $guid ) );
 
+     // Store transaction type.
+    update_post_meta( $order->id, '_trxservices_transaction_type', 'Credit ' . $tran_action );
+
     $message = sprintf( __( 'TrxServices order #%s refunded.', 'woocommerce-trxservices' ), $order_id ); 
     $this->log( $message );
     
@@ -522,6 +515,9 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     // Change order status.
     $order->update_status( 'cancelled', __( 'Voided a previous credit capture or sale via TrxServices.', 'woocommerce-trxservices' ) );
     $order->add_order_note( sprintf( __( 'Voided a previous credit capture or sale via TrxServices %s (GUID: %s)', 'woocommerce-trxservices' ), $amount, $guid ) );
+
+    // Store transaction type.
+    update_post_meta( $order->id, '_trxservices_transaction_type', 'Credit Void' );
 
     $message = 'TrxServices voided a previous credit capture or sale for order #' . $order->id;
     $this->log( $message );
@@ -580,6 +576,9 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     // Change order status.
     $order->update_status( 'processing', __( 'Payment captured via TrxServices.', 'woocommerce-trxservices' ) );
     $order->add_order_note( sprintf( __( 'TrxServices Credit Capture %s (GUID: %s)', 'woocommerce-trxservices' ), $amount, $guid ) );
+
+     // Store transaction type.
+    update_post_meta( $order->id, '_trxservices_transaction_type', 'Credit Capture' );
 
     $message = 'TrxServices captured payment for an authorized credit transaction for order #' . $order->id;
     $this->log( $message );
@@ -710,10 +709,10 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
   }
 
   /**
-   * Encrypt something using AES CBC 256.
+   * Encrypt a value using AES 256 encryption in CBC mode.
    * 
    * @param  string $value Value to be encrypted
-   * @return string $base64_encrypted Encrypted value.
+   * @return string Encrypted value.
    */
   public function encrypt($value) {
     $AES  = new AES_Encryption($this->algorithm_key, $this->algorithm_iv);
@@ -722,10 +721,10 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
   }
 
   /**
-   * Decrypt something using AES CBC 256.
+   * Decrypt a value encyrpted using AES 256 encryption in CBC mode.
    * 
-   * @param  string $value Value to be encrypted
-   * @return string $base64_encrypted Encrypted value.
+   * @param  string $value Value to be decrypted
+   * @return string Decrypted value.
    */
   public function decrypt($value) {
     $AES  = new AES_Encryption($this->algorithm_key, $this->algorithm_iv);
