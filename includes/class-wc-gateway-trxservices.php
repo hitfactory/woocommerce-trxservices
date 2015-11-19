@@ -177,7 +177,12 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
         || !defined( 'TRXSERVICES_CLIENT' ) ||  !defined( 'TRXSERVICES_SOURCE' ) ) {
         echo '<div class="error"><p>' . __( 'TrxServices Error: Please set your production credentials in wp-config.php.', 'woocommerce-trxservices' ) . '</p></div>';
       }
-    } 
+    }
+
+    // Show message if logging is enabled and not in sandbox mode.
+    if ( $this->debug == 'yes' && $this->sandbox == 'no' ) {
+      echo '<div class="error"><p>' . sprintf( __( 'TrxServices Error: The Debug Log should be disabled when not in sandbox mode. You are currently exposing customer data!', 'woocommerce-trxservices'), admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ) . '</p></div>';
+    }
 
     // Show message if enabled and FORCE SSL is disabled and WordPress HTTPS plugin is not detected.
     if ( 'no' == get_option( 'woocommerce_force_ssl_checkout' ) && !class_exists( 'WordPressHTTPS' ) ) {
