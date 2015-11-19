@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- *  ISO3166-Alpha-2 to ISO 3166-Alpha-3 country codes.
+ *  Maps ISO3166-Alpha-2 to ISO 3166-Alpha-3 country codes.
  */
 return array(
   "AF" => "AFG",
