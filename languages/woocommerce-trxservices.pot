@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n\n"
 
-#: includes/admin/views/admin-options.php:1, includes/class-wc-gateway-trxservices.php:28, includes/settings-trxservices.php:22
+#: includes/admin/views/admin-options.php:1, includes/class-wc-gateway-trxservices.php:53, includes/settings-trxservices.php:22
 msgid "TrxServices"
 msgstr ""
 
@@ -35,56 +35,88 @@ msgstr ""
 msgid "Learn more"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:27
+#: includes/class-wc-gateway-trxservices-addons.php:95
+msgid "TrxServices authorization for pre-order failed (Guid: %s ResponseCode: %s ResponseText: %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:100
+msgid "Unable to process pre-order. Please try again."
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:113, includes/class-wc-gateway-trxservices-addons.php:114
+msgid "TrxServices authorization approved (Guid: %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:156
+msgid "%s - Pre-order for "%s""
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:156
+msgid "(Order %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:163
+msgid "TrxServices payment approved (ID: %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:166
+msgid "Payment was declined - the customer need to try another card."
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:169
+msgid "TrxServices Transaction Failed (%s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:52
 msgid "Pay with TrxServices"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:29
+#: includes/class-wc-gateway-trxservices.php:54
 msgid "Take payments via TrxServices."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:130
+#: includes/class-wc-gateway-trxservices.php:156
 msgid "TrxServices is enabled, but it does not support your store currency."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:135
+#: includes/class-wc-gateway-trxservices.php:161
 msgid "TrxServices requires PHP 5.3 and above. You are using version %s."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:143
+#: includes/class-wc-gateway-trxservices.php:169
 msgid "TrxServices Error: Please set your test credentails in wp-config.php."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:152
+#: includes/class-wc-gateway-trxservices.php:178
 msgid "TrxServices Error: Please set your production credentials in wp-config.php."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:158
+#: includes/class-wc-gateway-trxservices.php:184
 msgid "TrxServices is enabled, but the <a href="%s">force SSL option</a> is disabled; your checkout may not be secure! Please enable SSL and ensure your server has a valid SSL certificate - TrxServices will only work in sandbox mode."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:199
-msgid "Thank you - your order is now pending payment."
+#: includes/class-wc-gateway-trxservices.php:224
+msgid "Thank you for your order."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:328, includes/class-wc-gateway-trxservices.php:446
-msgid "%s"
+#: includes/class-wc-gateway-trxservices.php:262
+msgid "Credit Capture"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:343
-msgid "TrxServices payment failed (Guid: %s ResponseCode: %s ResponseText: %s)"
+#: includes/class-wc-gateway-trxservices.php:372, includes/class-wc-gateway-trxservices.php:390, includes/class-wc-gateway-trxservices.php:391
+msgid "$message"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:348
+#: includes/class-wc-gateway-trxservices.php:376
 msgid "Unable to process payment. Please try again."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:368, includes/class-wc-gateway-trxservices.php:369
-msgid "TrxServices payment approved (Guid: %s)"
+#: includes/class-wc-gateway-trxservices.php:398
+msgid "On-Hold"
 msgstr ""
 
 #: includes/class-wc-gateway-trxservices.php:459
-msgid "Unable to refund order %d via TrxServices (Guid: %s ResponseCode: %s ResponseText: %s)"
+msgid "Unable to refund order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)"
 msgstr ""
 
 #: includes/class-wc-gateway-trxservices.php:467
@@ -92,11 +124,43 @@ msgid "Order refunded via TrxServices."
 msgstr ""
 
 #: includes/class-wc-gateway-trxservices.php:468
-msgid "Refunded %s (Guid: %s)"
+msgid "Refunded %s (GUID: %s)"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:551
+#: includes/class-wc-gateway-trxservices.php:470
+msgid "TrxServices order #%s refunded."
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:515
+msgid "Unable to void previous credit capture or sale for order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:523
+msgid "Voided a previous credit capture or sale via TrxServices."
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:524
+msgid "Voided a previous credit capture or sale via TrxServices %s (GUID: %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:573
+msgid "Unable to capture payment for order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:581
+msgid "Payment captured via TrxServices."
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:582
+msgid "TrxServices Credit Capture %s (GUID: %s)"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:645
 msgid "Unable to connect to TrxServices. Please try again."
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:649
+msgid "%s"
 msgstr ""
 
 #: includes/settings-trxservices.php:12
@@ -155,6 +219,14 @@ msgstr ""
 msgid "Place the payment gateway in sandbox mode (real payments will not be taken)."
 msgstr ""
 
+#: includes/settings-trxservices.php:61
+msgid "Credit Sale"
+msgstr ""
+
+#: includes/settings-trxservices.php:62
+msgid "Credit Auth"
+msgstr ""
+
 #: woocommerce-trxservices.php:130, woocommerce-trxservices.php:142
 msgid "Cheatin&#8217; huh?"
 msgstr ""
@@ -169,4 +241,12 @@ msgstr ""
 
 #: woocommerce-trxservices.php:334
 msgid "WooCommerce %s depends on version 2.2 and up of WooCommerce for this gateway to work! Please upgrade before activating."
+msgstr ""
+
+#: woocommerce-trxservices.php:395
+msgid "Capture payment"
+msgstr ""
+
+#: woocommerce-trxservices.php:398
+msgid "Void payment"
 msgstr ""
