@@ -356,10 +356,14 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
       return untrailingslashit( plugin_dir_path( __FILE__ ) );
     }
 
-  } // end if class
+  } // end class
 
   add_action( 'plugins_loaded', array( 'WC_TrxServices', 'get_instance' ), 0 );
-
+  
+  // Here because these actions don't get loaded from the payment gateway class.
+  add_action( 'woocommerce_order_actions', 'add_order_actions' );
+  add_action( 'woocommerce_order_action_trxservices_creditcapture', 'woocommerce_trxservices_creditcapture');
+  add_action( 'woocommerce_order_action_trxservices_creditvoid', 'woocommerce_trxservices_creditvoid');
 } // end if class exists.
 
 /**
@@ -371,4 +375,50 @@ function wc_trxservices() {
 	return WC_TrxServices::get_instance();
 }
 
-?>
+/**
+ * Returns the main instance of WC_Gateway_TrxServices to prevent the need to use globals.
+ *
+ * @return WC_Gateway_TrxServices
+ */
+function wc_gateway_trxservices() {
+  include_once( 'includes/class-wc-gateway-trxservices.php' );
+  return WC_Gateway_TrxServices::get_instance();
+}
+
+ /**
+ * Add custom order actions.
+ */
+function add_order_actions($actions) {
+  global $theorder;
+  switch ($theorder->status) {
+    case 'on-hold':
+      $actions['trxservices_creditcapture'] = __( 'Capture payment', 'woocommerce-trxservices' );
+      break;
+    case 'processing':
+      $actions['trxservices_creditvoid'] = __( 'Void payment', 'woocommerce-trxservices' );
+      break;  
+  }
+  return $actions;
+}
+
+/**
+ * Perform a Credit Capture transaction.
+ * 
+ * @param  WC_Order $order WooCommerce order
+ * @return bool     
+ */
+function woocommerce_trxservices_creditcapture($order) {
+  $trxservices = wc_gateway_trxservices();
+  $trxservices->process_creditcapture($order);
+}
+
+ /**
+ * Perform a Credit Void transaction.
+ * 
+ * @param  WC_Order $order WooCommerce order
+ * @return bool     
+ */
+function woocommerce_trxservices_creditvoid($order) {
+  $trxservices = wc_gateway_trxservices();
+  $trxservices->process_creditvoid($order);
+}
