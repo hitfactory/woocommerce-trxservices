@@ -356,7 +356,8 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       return;
     }
      
-    // Extract guid, responseCode and responseText.
+    // Extract guid, responseCode, responseText 
+    // and (if present) debugInfo.
     extract($result); 
 
     // Bail if payment failed.
@@ -368,8 +369,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       $order->add_order_note( $message );
       $this->log( $message );
       // Display message to customer.
-      $message = sprintf( __( 'Unable to process payment. Please try again.', 
-        'woocommerce-trxservices' ), $responseText  );
+      $message = __( 'Unable to process payment. Please try again.', 'woocommerce-trxservices' );
       wc_add_notice( $message, 'error' );
       return;
     }
@@ -641,11 +641,12 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       $response = wp_remote_post($this->api_endpoint, array(
         'method' => 'POST',
         'body' => $xmlRequest,
-        'timeout' => 5,
+        'timeout' => 15,
         'headers' => array('Content-Type' => 'text/xml'),
       ));
 
       if (is_wp_error($response)) {
+        $this->log( 'WP_Error: ' . print_r($response, TRUE) );
         throw new Exception(__('Unable to connect to TrxServices. Please try again.', 'woocommerce-trxservices'));
       }
     }
@@ -682,7 +683,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       $responseString = (string) $xmlResponse->Response[0];
       $response = $this->decrypt($responseString);
 
-      $message = 'TrxServices response: ' . print_r($response, true);
+      $message = 'TrxServices Response: ' . print_r($response, true);
       $this->log( $message );
       
       // Parse the decoded XML response.
@@ -691,9 +692,12 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       $guid = (string) $xmlResponse->Reference->Guid[0];
       $responseCode = (string) $xmlResponse->Result->ResponseCode;
       $responseText = (string) $xmlResponse->Result->ResponseText;
+      if (isset($xmlResponse->Result->DebugInfo)) {
+        $debugInfo = (string) $xmlResponse->Result->DebugInfo;
+      }
     }
     
-    $result = compact('guid', 'responseCode', 'responseText');
+    $result = compact('guid', 'responseCode', 'responseText', 'debugInfo');
     return $result;
   }
 
