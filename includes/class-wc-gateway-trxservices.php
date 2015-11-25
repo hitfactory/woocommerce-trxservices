@@ -571,7 +571,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     extract($result);
     
     if ( $responseCode != '00' ) {
-      $message = sprintf( __( 'Unable to capture payment for order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)', 
+      $message = sprintf( __( 'Unable to capture payment for order %s via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)', 
         'woocommerce-trxservices' ), $order_id, $guid, $responseCode, $responseText  );
       $order->add_order_note( $message );
       $this->log( $message );
