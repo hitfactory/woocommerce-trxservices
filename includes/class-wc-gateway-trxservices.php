@@ -200,10 +200,6 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       return false;
     }
 
-    if ( !is_ssl() && 'yes' != $this->sandbox ) {
-      return false;
-    }
-
     if ( !$this->algorithm_iv || !$this->algorithm_key ) {
       return false;
     }
