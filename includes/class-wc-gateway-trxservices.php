@@ -8,10 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * TrxServices Payment Gateway
  *
  * @class   WC_Gateway_TrxServices
- * @extends WC_Payment_Gateway
- * @version 1.0.0
+ * @extends extends WC_Payment_Gateway_CC
+ * @version 1.1.0
  */
-class WC_Gateway_TrxServices extends WC_Payment_Gateway {
+class WC_Gateway_TrxServices extends WC_Payment_Gateway_CC {
 
   /**
      * Instance of this class.
@@ -45,21 +45,21 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
    * @return void
    */
   public function __construct() {
-    $this->id                 = 'trxservices';
-    $this->icon               = apply_filters( 'woocommerce_trxservices_icon', plugins_url( '/assets/images/cards.png', dirname( __FILE__ ) ) );
-    $this->has_fields         = true;
+    $this->id = 'trxservices';
+    $this->icon = apply_filters( 'woocommerce_trxservices_icon', plugins_url( '/assets/images/cards.png', dirname( __FILE__ ) ) );
+    $this->has_fields = true;
 
-    $this->order_button_text  = __( 'Pay with TrxServices', 'woocommerce-trxservices' );
-    $this->method_title       = __( 'TrxServices', 'woocommerce-trxservices' );
+    $this->order_button_text = __( 'Pay with TrxServices', 'woocommerce-trxservices' );
+    $this->method_title = __( 'TrxServices', 'woocommerce-trxservices' );
     $this->method_description = __( 'Take payments via TrxServices.', 'woocommerce-trxservices' );
 
-    $this->supports           = array(
+    $this->supports = array(
       'products',
-      'default_credit_card_form',
       'refunds',
+      'tokenization'
     );
 
-    $this->view_transaction_url = '';
+    $this->view_transaction_url = 'https://manage.trxservices.net';
 
     // Load the form fields.
     $this->init_form_fields();
@@ -69,6 +69,9 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
 
     // Load the country codes.
     $this->init_countries();
+
+    // Load the billing periods.
+    $this->init_billing_periods();
 
     // Get settings values.
     $this->enabled        = $this->get_option( 'enabled' );
@@ -80,34 +83,24 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
 
     $this->sandbox        = $this->get_option( 'sandbox' );
 
-    $this->api_endpoint   = $this->sandbox == 'no' ? 'https://api.trxservices.com/' :  'https://api.trxservices.net/';
-
     if ( $this->sandbox == 'no') {
-      $this->algorithm = defined( 'TRXSERVICES_ALGORITHM' ) ? TRXSERVICES_ALGORITHM : '';
-      $this->algorithm_mode = defined( 'TRXSERVICES_ALGORITHM_MODE' ) ? TRXSERVICES_ALGORITHM_MODE : '';
-      $this->algorithm_key = defined( 'TRXSERVICES_ALGORITHM_KEY' ) ? TRXSERVICES_ALGORITHM_KEY : '';
-      $this->algorithm_iv = defined( 'TRXSERVICES_ALGORITHM_IV' ) ? TRXSERVICES_ALGORITHM_IV : '';
-      $this->client = defined( 'TRXSERVICES_CLIENT' ) ? TRXSERVICES_CLIENT : '';
-      $this->source = defined( 'TRXSERVICES_SOURCE' ) ? TRXSERVICES_SOURCE : '';
+      $this->algorithm_key = $this->get_option( 'algorithm_key' );
+      $this->algorithm_iv = $this->get_option( 'algorithm_iv' );
     }
 
     if ( $this->sandbox == 'yes') {
-      $this->algorithm = defined( 'TRXSERVICES_SANDBOX_ALGORITHM' ) ? TRXSERVICES_SANDBOX_ALGORITHM : '';
-      $this->algorithm_mode = defined( 'TRXSERVICES_SANDBOX_ALGORITHM_MODE' ) ? TRXSERVICES_SANDBOX_ALGORITHM_MODE : '';
-      $this->algorithm_key = defined( 'TRXSERVICES_SANDBOX_ALGORITHM_KEY' ) ? TRXSERVICES_SANDBOX_ALGORITHM_KEY : '';
-      $this->algorithm_iv = defined( 'TRXSERVICES_SANDBOX_ALGORITHM_IV' ) ? TRXSERVICES_SANDBOX_ALGORITHM_IV : '';
-      $this->client = defined( 'TRXSERVICES_SANDBOX_CLIENT' ) ? TRXSERVICES_SANDBOX_CLIENT : '';
-      $this->source = defined( 'TRXSERVICES_SANDBOX_SOURCE' ) ? TRXSERVICES_SANDBOX_SOURCE : '';
-    } 
+      $this->algorithm_key = $this->get_option( 'sandbox_algorithm_key' );
+      $this->algorithm_iv = $this->get_option( 'sandbox_algorithm_iv' );
+    }
 
     if ( $this->algorithm_key) {
-      $this->algorithm_key  = $this->hex2bin($this->algorithm_key);
+      $this->algorithm_key  = WC_TrxServices_API::hex2bin($this->algorithm_key);
     }
     if ( $this->algorithm_iv) {
-      $this->algorithm_iv  = $this->hex2bin($this->algorithm_iv);
+      $this->algorithm_iv  = WC_TrxServices_API::hex2bin($this->algorithm_iv);
     }
 
-    $this->debug          = $this->get_option( 'debug' );
+    $this->debug = $this->get_option( 'debug' );
 
     if ( is_admin() ) {
       add_action( 'admin_notices', array( $this, 'checks' ) );
@@ -119,11 +112,20 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
 
     // Customer Emails.
     add_action( 'woocommerce_email_before_order_table', array( $this, 'email_instructions' ), 10, 3 );
+
+    add_action( 'wp_enqueue_scripts', array( $this, 'payment_scripts' ) );
+  }
+
+  public function payment_scripts() {
+    if ( ! is_cart() && ! is_checkout() && ! is_add_payment_method_page() ) {
+      return;
+    }
+    wp_enqueue_script( 'wc-trxservices', plugins_url('../assets/js/trxservices.js', __FILE__), array( 'wc-credit-card-form' ), WC_TRXSERVICES_VERSION, true );
   }
 
   /**
    * Check if this gateway can be enabled.
-   * 
+   *
    * @return bool
    */
   public function can_be_enabled() {
@@ -159,24 +161,6 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     // PHP Version.
     if ( version_compare( phpversion(), '5.3', '<' ) ) {
       echo '<div class="error"><p>' . sprintf( __( 'TrxServices requires PHP 5.3 and above. You are using version %s.', 'woocommerce-trxservices' ), phpversion() ) . '</p></div>';
-    }
-
-    // Check test credentials are set.
-    if ( $this->sandbox == 'yes') {
-      if ( !defined( 'TRXSERVICES_SANDBOX_ALGORITHM' ) || !defined( 'TRXSERVICES_SANDBOX_ALGORITHM_MODE' )
-        || !defined( 'TRXSERVICES_SANDBOX_ALGORITHM_KEY' ) || !defined( 'TRXSERVICES_SANDBOX_ALGORITHM_IV' )
-        || !defined( 'TRXSERVICES_SANDBOX_CLIENT' ) ||  !defined( 'TRXSERVICES_SANDBOX_SOURCE' ) ) {
-        echo '<div class="error"><p>' . __( 'TrxServices Error: Please set your test credentails in wp-config.php.', 'woocommerce-trxservices' ) . '</p></div>';
-      }
-    }
-
-    // Check production credentials are set.
-    if ( $this->sandbox == 'no') {
-      if ( !defined( 'TRXSERVICES_ALGORITHM' ) || !defined( 'TRXSERVICES_ALGORITHM_MODE' )
-        || !defined( 'TRXSERVICES_ALGORITHM_KEY' ) || !defined( 'TRXSERVICES_ALGORITHM_IV' )
-        || !defined( 'TRXSERVICES_CLIENT' ) ||  !defined( 'TRXSERVICES_SOURCE' ) ) {
-        echo '<div class="error"><p>' . __( 'TrxServices Error: Please set your production credentials in wp-config.php.', 'woocommerce-trxservices' ) . '</p></div>';
-      }
     }
 
     // Show message if logging is enabled and not in sandbox mode.
@@ -235,27 +219,18 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
    * @access public
    */
   public function payment_fields() {
+
     $description = $this->get_description();
 
     if ( $this->sandbox == 'yes' ) {
-      $description .= ' ' . __( 'TEST MODE ENABLED.' );
+      $description .= ' ' . sprintf( __( 'TEST MODE ENABLED. In test mode, you can use the card number 4111111111111111 with any CVC and a valid expiration date. See the Transaction Services XML API Overview for more card numbers.', 'woocommerce-trxservices' ));
     }
 
     if ( !empty( $description ) ) {
       echo wpautop( wptexturize( trim( $description ) ) );
     }
 
-    // Display default credit card form.
-    if ( $this->supports( 'default_credit_card_form' ) ) {
-      $this->credit_card_form(
-        array( 
-          'fields_have_names' => true
-        )
-      );
-    }
-
-    // Include custom payment fields.
-    include_once( WC_TrxServices()->plugin_path() . '/includes/views/html-payment-fields.php' );
+    parent::payment_fields();
   }
 
   /**
@@ -280,11 +255,11 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
    * @param  bool $plain_text
    */
   public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-    if ( !$sent_to_admin && $this->id === $order->payment_method && $order->has_status( 'on-hold' ) ) {
+    if ( !$sent_to_admin && $this->id === $order->get_payment_method() && $order->has_status( 'on-hold' ) ) {
       if ( !empty( $this->instructions ) ) {
         echo wpautop( wptexturize( $this->instructions ) ) . PHP_EOL;
       }
-      $this->extra_details( $order->id );
+      $this->extra_details( $order->get_id() );
     }
   }
 
@@ -297,6 +272,53 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
   }
 
   /**
+   * Add a payment method form.
+   */
+  public function add_payment_method() {
+    if ( empty( $_POST['trxservices_token'] ) || empty( $_POST['trxservices_card_type'] ) || empty( $_POST['trxservices_last_four'] ) || empty( $_POST['trxservices_expiry_month'] ) || empty( $_POST['trxservices_expiry_month'] ) ) {
+      wc_add_notice( __( 'There was a problem adding this card.', 'woocommerce-trxservices' ), 'error' );
+      return;
+    }
+
+    $token_id = $this->create_payment_token();
+    if (!$token_id) {
+      wc_add_notice( __( 'There was a problem adding this card.', 'woocommerce-trxservices' ), 'error' );
+      return;
+    }
+
+    return array(
+      'result'   => 'success',
+      'redirect' => wc_get_endpoint_url( 'payment-methods' ),
+    );
+  }
+
+  /**
+   * Create and save a payment token to the database.
+   * @return int Token ID
+   */
+  public function create_payment_token() {
+    $storage_safe_token = wc_clean( $_POST['trxservices_token'] );
+    $card_type = wc_clean( $_POST['trxservices_card_type'] );
+    $last_four = wc_clean( $_POST['trxservices_last_four'] );
+    $expiry_month = wc_clean( $_POST['trxservices_expiry_month'] );
+    $expiry_year = wc_clean( $_POST['trxservices_expiry_year'] );
+
+    $token = new WC_Payment_Token_CC();
+    $token->set_token( $storage_safe_token );
+    $token->set_card_type( $card_type );
+    $token->set_last4( $last_four );
+    $token->set_expiry_month( $expiry_month );
+    $token->set_expiry_year( $expiry_year );
+    $token->set_user_id( get_current_user_id() );
+    $result = $token->save();
+    if ($result) {
+      $message = 'Payment token ID %s created for StorageSafe token %s.';
+      $this->log( sprintf( __( $message, 'woocommerce-trxservices' ), $result, $storage_safe_token ) );
+    }
+    return $result;
+  }
+
+  /**
    * Process a credit card payment
    *
    * @access public
@@ -304,38 +326,31 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
    * @return bool | array
    */
   public function process_payment( $order_id ) {
-    
     $order = new WC_Order( $order_id );
+    $storage_safe_token = $order->get_meta( '_trxservices_storage_safe_token', true );
 
-    $pan_number = isset($_POST['trxservices-card-number']) ? woocommerce_clean($_POST['trxservices-card-number']) : '';
-    $pan_number = str_replace(' ', '', $pan_number);
-    
-    $card_cvv = isset($_POST['trxservices-card-cvc']) ? woocommerce_clean($_POST['trxservices-card-cvc']) : '';
-    $card_expiry = isset($_POST['trxservices-card-expiry']) ? woocommerce_clean($_POST['trxservices-card-expiry']) : '';
-    $card_expiry = str_replace(array(' ', '/'), '' , $card_expiry);
-    
-    // Convert country code to ISO 3166-1 alpha-3.
-    $billing_country = !empty($this->countries[$order->billing_country]) ? $this->countries[$order->billing_country] : '';
-                    
+    if (empty($storage_safe_token)) {
+      if ( isset( $_POST['wc-trxservices-payment-token'] ) && 'new' !== $_POST['wc-trxservices-payment-token'] ) {
+        $token_id = wc_clean( $_POST['wc-trxservices-payment-token'] );
+        $token = WC_Payment_Tokens::get( $token_id );
+
+        // Bail if token not owned by current user.
+        if ( $token->get_user_id() !== get_current_user_id() ) {
+          // Display message to customer.
+          $message = __( 'Unable to process payment using this credit card. Please try again.', 'woocommerce-trxservices' );
+          wc_add_notice( $message, 'error' );
+          return;
+        }
+        $storage_safe_token = $token->get_token();
+      }
+    }
+
     $data = array(
       'Detail' => array(
         'TranType' => 'Credit',
         'TranAction' => $this->mode, // Either Sale or Auth
         'CurrencyCode' => 840, // USD
-        'Amount' => $order->order_total,
-      ),
-      'Account' => array(
-        'FirstName' => $order->billing_first_name,
-        'LastName' => $order->billing_last_name,
-        'Email' => $order->billing_email,
-        'Pan' => $pan_number,
-        'Cvv' => $card_cvv,
-        'Expiration' => $card_expiry,
-        'Postal' => $order->billing_postcode,
-        'Address' => $order->billing_address_1,
-        'City' => $order->billing_city,
-        'Region' =>  $order->billing_state, 
-        'Country' =>  $billing_country,
+        'Amount' => $order->get_total(),
       ),
       'IndustryData' => array(
         'Industry' => 'CardNotPresent',
@@ -343,27 +358,59 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       ),
     );
 
-    // Add optional fields.
-    if (!empty($order->billing_address_2)) {
-      $data['Account']['Address2'] = $order->billing_address_2;
+    $account = array(
+      'FirstName' => $order->get_billing_first_name(),
+      'LastName' => $order->get_billing_last_name(),
+      'Email' => $order->get_billing_email()
+    );
+    // Add optional address fields.
+    if (!empty($order->get_billing_postcode())) {
+      $account['Postal'] = $order->get_billing_postcode();
+    }
+    if (!empty($order->get_billing_address_1())) {
+      $account['Address'] = $order->get_billing_address_1();
+    }
+    if (!empty($order->get_billing_address_2())) {
+      $account['Address2'] = $order->get_billing_address_2();
+    }
+    if (!empty($order->get_billing_city())) {
+      $account['City'] = $order->get_billing_city();
+    }
+    if (!empty($order->get_billing_state())) {
+      $account['Region'] = $order->get_billing_state();
+    }
+    // Convert country code to ISO 3166-1 alpha-3.
+    $billing_country = !empty($this->countries[$order->get_billing_country()]) ? $this->countries[$order->get_billing_country()] : '';
+    if (!empty($billing_country)) {
+      $account['Country'] = $billing_country;
+    }
+    $data['Account']= $account;
+
+    if (!empty($_POST['trxservices_token'])) {
+      $storage_safe_token = wc_clean( $_POST['trxservices_token'] );
+    }
+    $data['StorageSafe']['Guid'] = $storage_safe_token;
+
+    // Bail if no storage safe token.
+    if (!$storage_safe_token) {
+      return;
     }
 
-    $data = apply_filters( 'woocommerce_trxservices_payment_data', $data, $order );
-    $result = $this->do_request($data);
-    
+    $data = apply_filters( 'woocommerce_trxservices_process_payment', $data, $order );
+    $result = WC_TrxServices_API::do_request($data);
+
     // Bail if payment failed.
     if (!$result) {
       return;
     }
-     
-    // Extract guid, responseCode, responseText 
-    // and (if present) debugInfo.
-    extract($result); 
+
+    // Extract guid, responseCode, responseText and (if present) debugInfo.
+    extract($result);
 
     // Bail if payment failed.
     if ($responseCode != '00') {
-      $message = $this->mode == 'Sale' 
-        ? 'TrxServices credit sale payment failed (GUID: %s ResponseCode: %s ResponseText: %s)' 
+      $message = $this->mode == 'Sale'
+        ? 'TrxServices credit sale payment failed (GUID: %s ResponseCode: %s ResponseText: %s)'
         : 'TrxServices credit authorization failed (GUID: %s ResponseCode: %s ResponseText: %s)';
       $message = sprintf( __( $message, 'woocommerce-trxservices' ), $guid, $responseCode, $responseText  );
       $order->add_order_note( $message );
@@ -373,12 +420,20 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       wc_add_notice( $message, 'error' );
       return;
     }
-    
+
     // Store GUID as transaction ID.
-    add_post_meta( $order->id, '_transaction_id', $guid, true );
+    add_post_meta( $order->get_id(), '_transaction_id', $guid, true );
 
     // Store transaction type.
-    update_post_meta( $order->id, '_trxservices_transaction_type', 'Credit ' . $this->mode );
+    update_post_meta( $order->get_id(), '_trxservices_transaction_type', 'Credit ' . $this->mode );
+
+    // Store StorageSafe token.
+    update_post_meta( $order->get_id(), '_trxservices_storage_safe_token', $storage_safe_token );
+
+    // Store token ID.
+    if (isset($token_id) && !empty($token_id)) {
+      update_post_meta( $order->get_id(), '_trxservices_token_id', $token_id );
+    }
 
     // Add order note.
     $message = $this->mode == 'Sale' ? 'TrxServices credit sale payment approved (GUID: %s)' : 'TrxServices credit authorization approved (GUID: %s)';
@@ -389,13 +444,13 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
       $order->payment_complete();
     }
     else {
-      $order->update_status( 'on-hold', 
+      $order->update_status( 'on-hold',
       __( 'On-Hold', 'woocommerce-trxservices' ) );
     }
-    
+
     // Remove items from cart.
     WC()->cart->empty_cart();
-    
+
     // Return result and redirect to thank you page.
     return array(
       'id' => $guid,
@@ -440,18 +495,18 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     );
 
     $data = apply_filters( 'woocommerce_trxservices_refund_data', $data, $order, $amount, $reason );
-    $result = $this->do_request($data);
-    
+    $result = WC_TrxServices_API::do_request($data);
+
     // Bail if refund failed.
     if (!$result) {
       return false;
     }
-     
+
     // Extract guid, responseCode and responseText.
-    extract($result); 
+    extract($result);
 
     if ( $responseCode != '00' ) {
-      $message = sprintf( __( 'Unable to refund order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)', 
+      $message = sprintf( __( 'Unable to refund order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)',
         'woocommerce-trxservices' ), $order_id, $guid, $responseCode, $responseText  );
       $order->add_order_note( $message );
       $this->log( $message );
@@ -463,11 +518,11 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     $order->add_order_note( sprintf( __( 'Refunded %s (GUID: %s)', 'woocommerce-trxservices' ), $amount, $guid ) );
 
      // Store transaction type.
-    update_post_meta( $order->id, '_trxservices_transaction_type', 'Credit ' . $tran_action );
+    update_post_meta( $order->get_id(), '_trxservices_transaction_type', 'Credit ' . $tran_action );
 
-    $message = sprintf( __( 'TrxServices order #%s refunded.', 'woocommerce-trxservices' ), $order_id ); 
+    $message = sprintf( __( 'TrxServices order #%s refunded.', 'woocommerce-trxservices' ), $order_id );
     $this->log( $message );
-    
+
     return true;
   }
 
@@ -487,7 +542,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     }
 
     $guid = $order->get_transaction_id();
-    
+
     $data = array(
       'Detail' => array(
         'TranType' => 'Credit',
@@ -499,18 +554,18 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     );
 
     $data = apply_filters( 'woocommerce_trxservices_creditvoid_data', $data, $order, $amount, $reason );
-    $result = $this->do_request($data);
-    
+    $result = WC_TrxServices_API::do_request($data);
+
     // Bail if void failed.
     if (!$result) {
       return false;
     }
-     
+
     // Extract guid, responseCode and responseText.
     extract($result);
-    
+
     if ( $responseCode != '00' ) {
-      $message = sprintf( __( 'Unable to void previous credit capture or sale for order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)', 
+      $message = sprintf( __( 'Unable to void previous credit capture or sale for order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)',
         'woocommerce-trxservices' ), $order_id, $guid, $responseCode, $responseText  );
       $order->add_order_note( $message );
       $this->log( $message );
@@ -522,11 +577,11 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     $order->add_order_note( sprintf( __( 'Voided a previous credit capture or sale via TrxServices %s (GUID: %s)', 'woocommerce-trxservices' ), $amount, $guid ) );
 
     // Store transaction type.
-    update_post_meta( $order->id, '_trxservices_transaction_type', 'Credit Void' );
+    update_post_meta( $order->get_id(), '_trxservices_transaction_type', 'Credit Void' );
 
-    $message = 'TrxServices voided a previous credit capture or sale for order #' . $order->id;
+    $message = 'TrxServices voided a previous credit capture or sale for order #' . $order->get_id();
     $this->log( $message );
-    
+
     return true;
   }
 
@@ -538,7 +593,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
    * @return bool|WP_Error
    */
   public function process_creditcapture( $order ) {
-    
+
     // Bail if no GUID.
     if (!$order || !$order->get_transaction_id()) {
       $this->log( 'TrxServices failed to capture an authorized credit transaction: No GUID' );
@@ -546,7 +601,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     }
 
     $guid = $order->get_transaction_id();
-    
+
     $data = array(
       'Detail' => array(
         'TranType' => 'Credit',
@@ -560,18 +615,18 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     );
 
     $data = apply_filters( 'woocommerce_trxservices_creditcapture_data', $data, $order, $amount, $reason );
-    $result = $this->do_request($data);
-    
+    $result = WC_TrxServices_API::do_request($data);
+
     // Bail if capture failed.
     if (!$result) {
       return false;
     }
-     
+
     // Extract guid, responseCode and responseText.
     extract($result);
-    
+
     if ( $responseCode != '00' ) {
-      $message = sprintf( __( 'Unable to capture payment for order %s via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)', 
+      $message = sprintf( __( 'Unable to capture payment for order %s via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)',
         'woocommerce-trxservices' ), $order_id, $guid, $responseCode, $responseText  );
       $order->add_order_note( $message );
       $this->log( $message );
@@ -583,9 +638,9 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
     $order->add_order_note( sprintf( __( 'TrxServices Credit Capture %s (GUID: %s)', 'woocommerce-trxservices' ), $amount, $guid ) );
 
      // Store transaction type.
-    update_post_meta( $order->id, '_trxservices_transaction_type', 'Credit Capture' );
+    update_post_meta( $order->get_id(), '_trxservices_transaction_type', 'Credit Capture' );
 
-    $message = 'TrxServices captured payment for an authorized credit transaction for order #' . $order->id;
+    $message = 'TrxServices captured payment for an authorized credit transaction for order #' . $order->get_id();
     $this->log( $message );
     return true;
   }
@@ -598,158 +653,25 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway {
   }
 
   /**
-   * Build XMLRequest string
-   * 
-   * @param  array $data 
-   * @return string $xmlRequest
+   * Map billing periods to TrxServices RecurPeriod values.
    */
-  public function build_xmlrequest($data) {
-    $xml = '';
-    foreach($data as $child => $elements) {
-      $xml .= "<$child>";
-      foreach($elements as $key => $value) {
-        $xml .= "<$key>" . htmlspecialchars(trim($value)) . "</$key>";
-      }
-      $xml .= "</$child>";
-    }
-
-    $message = 'TrxServices Request: ' . print_r( $xml, true ) . ')';
-    $this->log( $message );
-
-    // Encrypt Request.
-    $Request =  $this->encrypt($xml);
-
-    $xmlRequest  = '<Message>';
-    $xmlRequest .= '<Request>'. $Request .'</Request>';                                
-    $xmlRequest .= '<Authentication>';
-    $xmlRequest .= '<Client>' . $this->client . '</Client>';
-    $xmlRequest .= '<Source>' . $this->source . '</Source>';
-    $xmlRequest .= '</Authentication>';
-    $xmlRequest .= '</Message>';
-    return $xmlRequest;
-  }
-
-  /**
-   * Make API request
-   * 
-   * @param array $data
-   * @return bool | array
-   */
-  public function do_request($data) {
-    $xmlRequest = $this->build_xmlrequest($data);
-    try {
-      $response = wp_remote_post($this->api_endpoint, array(
-        'method' => 'POST',
-        'body' => $xmlRequest,
-        'timeout' => 15,
-        'headers' => array('Content-Type' => 'text/xml'),
-      ));
-
-      if (is_wp_error($response)) {
-        $this->log( 'WP_Error: ' . print_r($response, TRUE) );
-        throw new Exception(__('Unable to connect to TrxServices. Please try again.', 'woocommerce-trxservices'));
-      }
-    }
-    catch (Exception $e) {
-      $message = sprintf( __( '%s', 
-        'woocommerce-trxservices' ), $e->getMessage()  );
-      $this->log( $message );
-      wc_add_notice( $message, 'error' );
-      return;
-    }
-     
-    // Parse the XML response.
-    $result = $this->parse_response($response);
-    return $result;
-  }
-
-  /**
-   * Parse response body
-   * 
-   * @param  array $response 
-   * @return array $result contains keys guid, responseCode and responseText          
-   */
-  public function parse_response($response) {
-    $xmlResponse = simplexml_load_string($response['body']);
-
-    // Existence of Result property indicates failure.
-    if ( isset($xmlResponse->Response->Result) ) {
-      $responseCode = (string) $xmlResponse->Response->Result->ResponseCode;
-      $guid = (string) $xmlResponse->Response->Reference->Guid;
-      $responseText = (string) $xmlResponse->Response->Result->ResponseText;
-    }
-    else {
-      // On success, XML will contain encrypted response.
-      $responseString = (string) $xmlResponse->Response[0];
-      $response = $this->decrypt($responseString);
-
-      $message = 'TrxServices Response: ' . print_r($response, true);
-      $this->log( $message );
-      
-      // Parse the decoded XML response.
-      $response = "<Message>$response</Message>";
-      $xmlResponse = simplexml_load_string($response);
-      $guid = (string) $xmlResponse->Reference->Guid[0];
-      $responseCode = (string) $xmlResponse->Result->ResponseCode;
-      $responseText = (string) $xmlResponse->Result->ResponseText;
-      if (isset($xmlResponse->Result->DebugInfo)) {
-        $debugInfo = (string) $xmlResponse->Result->DebugInfo;
-      }
-    }
-    
-    $result = compact('guid', 'responseCode', 'responseText', 'debugInfo');
-    return $result;
-  }
-
-  /**
-   * Decodes a hexadecimally encoded binary string
-   *
-   * @param  string $str Hexadecimally encoded binary string
-   * @return string $bin Binary string
-   */
-  public function hex2bin($str) {
-    $bin = "";
-    $i = 0;
-    do {
-        $bin .= chr(hexdec($str{$i}.$str{($i + 1)}));
-        $i += 2;
-    } while ($i < strlen($str));
-    return $bin;
-  }
-
-  /**
-   * Encrypt a value using AES 256 encryption in CBC mode.
-   * 
-   * @param  string $value Value to be encrypted
-   * @return string Encrypted value.
-   */
-  public function encrypt($value) {
-    $AES  = new AES_Encryption($this->algorithm_key, $this->algorithm_iv);
-    $encrypted = $AES->encrypt($value);
-    return base64_encode($encrypted);
-  }
-
-  /**
-   * Decrypt a value encyrpted using AES 256 encryption in CBC mode.
-   * 
-   * @param  string $value Value to be decrypted
-   * @return string Decrypted value.
-   */
-  public function decrypt($value) {
-    $AES  = new AES_Encryption($this->algorithm_key, $this->algorithm_iv);
-    return $AES->decrypt(base64_decode($value));
+  public function init_billing_periods() {
+    $this->recur_periods = array(
+      'day' => 'Daily',
+      'month' => 'Monthly',
+      'year' => 'Yearly',
+    );
   }
 
   /**
    * Log TrxServices events
-   * 
+   *
    * @param  string $message
    */
   public function log( $message ) {
     if ( $this->debug == 'yes' ) {
       $this->log = new WC_Logger();
-      $this->log->add( $this->id, $message );
+      $this->log->add( 'woocommerce-' . $this->id, $message );
     }
   }
-
 }

@@ -50,6 +50,76 @@ return array(
     'description' => __( 'Place the payment gateway in sandbox mode (real payments will not be taken).', 'woocommerce-trxservices' ),
     'default'     => 'yes'
   ),
+  'sandbox_credentials' => array(
+    'title'       => __( 'Sandbox Credentials', 'woocommerce-trxservices' ),
+    'type'        => 'title',
+    'description' => '',
+  ),
+  'sandbox_algorithm' => array(
+    'title'       => __( 'Sandbox Algorithm', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'sandbox_algorithm_mode' => array(
+    'title'       => __( 'Sandbox Algorithm Mode', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'sandbox_algorithm_key' => array(
+    'title'       => __( 'Sandbox Algorithm Key', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'sandbox_algorithm_iv' => array(
+    'title'       => __( 'Sandbox Algorithm IV', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'sandbox_client' => array(
+    'title'       => __( 'Sandbox Client', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'sandbox_source' => array(
+    'title'       => __( 'Sandbox Source', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+   'credentials' => array(
+    'title'       => __( 'Production Credentials', 'woocommerce-trxservices' ),
+    'type'        => 'title',
+    'description' => '',
+  ),
+  'algorithm' => array(
+    'title'       => __( 'Production Algorithm', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'algorithm_mode' => array(
+    'title'       => __( 'Production Algorithm Mode', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'algorithm_key' => array(
+    'title'       => __( 'Production Algorithm Key', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'algorithm_iv' => array(
+    'title'       => __( 'Production Algorithm IV', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'client' => array(
+    'title'       => __( 'Production Client', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
+  'source' => array(
+    'title'       => __( 'Production Source', 'woocommerce-trxservices' ),
+    'type'        => 'text',
+    'default'     => '',
+  ),
   'mode' => array(
     'title'       => __( 'Mode', 'woocommerce' ),
     'type'        => 'select',
