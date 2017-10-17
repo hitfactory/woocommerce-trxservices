@@ -1,133 +1,152 @@
-# Copyright (C) 2015 WC_TrxServices
+# Copyright (C) 2017 WC_TrxServices
 # This file is distributed under the same license as the WC_TrxServices package.
 msgid ""
 msgstr ""
 "Project-Id-Version: WC_TrxServices\n"
-"Report-Msgid-Bugs-To: http://hitfactory.co.nz\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2015-MO-DA HO:MI+ZONE\n"
+"Report-Msgid-Bugs-To: https://hitfactory.co.nz\n"
 "X-Poedit-Basepath: ..\n"
-"X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: __;_e;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;_n_noop:1,2;_nx_noop:3c,1,2;__ngettext_noop:1,2\n"
+"X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: includes/admin/views/admin-options.php:1, includes/class-wc-gateway-trxservices.php:53, includes/settings-trxservices.php:22
-msgid "TrxServices"
+#: woocommerce-trxservices.php:133, woocommerce-trxservices.php:145
+msgid "Cheatin&#8217; huh?"
 msgstr ""
 
-#: includes/admin/views/admin-options.php:5
-msgid "Getting started"
+#: woocommerce-trxservices.php:208
+msgid "Payment Settings"
 msgstr ""
 
-#: includes/admin/views/admin-options.php:6
-msgid "TrxServices is an advanced provider of debit card and credit card acceptance in the U.S. dedicated exclusively to the small-to-medium merchant market."
+#: woocommerce-trxservices.php:230
+msgid "Documentation"
 msgstr ""
 
-#: includes/admin/views/admin-options.php:9
-msgid "Sign up for TrxServices"
+#: woocommerce-trxservices.php:353
+msgid "WooCommerce %s depends on version 3.0.0 and up of WooCommerce for this gateway to work! Please upgrade before activating."
 msgstr ""
 
-#: includes/admin/views/admin-options.php:10
-msgid "Learn more"
+#: woocommerce-trxservices.php:413
+msgid "Capture payment"
+msgstr ""
+
+#: woocommerce-trxservices.php:416
+msgid "Void payment"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:89, includes/class-wc-gateway-trxservices-addons.php:101, includes/class-wc-gateway-trxservices.php:340
+msgid "Unable to process payment using this credit card. Please try again."
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:161, includes/class-wc-gateway-trxservices-addons.php:197, includes/class-wc-gateway-trxservices-addons.php:213, includes/class-wc-gateway-trxservices-addons.php:214, includes/class-wc-gateway-trxservices.php:316, includes/class-wc-gateway-trxservices.php:415, includes/class-wc-gateway-trxservices.php:440, includes/class-wc-gateway-trxservices.php:441, includes/class-wc-trxservices-api.php:289, includes/class-wc-trxservices-api.php:293, includes/class-wc-trxservices-api.php:297
+msgid "$message"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:201
+msgid "Failed"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:221, includes/class-wc-gateway-trxservices.php:448
+msgid "On-Hold"
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices-addons.php:252
+msgid "Via %1$s ending in %2$s"
 msgstr ""
 
 #: includes/class-wc-gateway-trxservices.php:52
 msgid "Pay with TrxServices"
 msgstr ""
 
+#: includes/class-wc-gateway-trxservices.php:53, includes/settings-trxservices.php:22, includes/admin/views/admin-options.php:1
+msgid "TrxServices"
+msgstr ""
+
 #: includes/class-wc-gateway-trxservices.php:54
 msgid "Take payments via TrxServices."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:156
+#: includes/class-wc-gateway-trxservices.php:158
 msgid "TrxServices is enabled, but it does not support your store currency."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:161
+#: includes/class-wc-gateway-trxservices.php:163
 msgid "TrxServices requires PHP 5.3 and above. You are using version %s."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:169
-msgid "TrxServices Error: Please set your test credentails in wp-config.php."
-msgstr ""
-
-#: includes/class-wc-gateway-trxservices.php:178
-msgid "TrxServices Error: Please set your production credentials in wp-config.php."
-msgstr ""
-
-#: includes/class-wc-gateway-trxservices.php:184
+#: includes/class-wc-gateway-trxservices.php:168
 msgid "TrxServices Error: The Debug Log should be disabled when not in sandbox mode. You are currently exposing customer data!"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:189
-msgid "TrxServices is enabled, but the <a href="%s">force SSL option</a> is disabled; your checkout may not be secure! Please enable SSL and ensure your server has a valid SSL certificate - TrxServices will only work in sandbox mode."
+#: includes/class-wc-gateway-trxservices.php:173
+msgid "TrxServices is enabled, but the <a href=\"%s\">force SSL option</a> is disabled; your checkout may not be secure! Please enable SSL and ensure your server has a valid SSL certificate - TrxServices will only work in sandbox mode."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:229
+#: includes/class-wc-gateway-trxservices.php:213
 msgid "Thank you for your order."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:368, includes/class-wc-gateway-trxservices.php:385, includes/class-wc-gateway-trxservices.php:386
-msgid "$message"
+#: includes/class-wc-gateway-trxservices.php:226
+msgid "TEST MODE ENABLED. In test mode, you can use the card number 4111111111111111 with any CVC and a valid expiration date. See the Transaction Services XML API Overview for more card numbers."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:372
+#: includes/class-wc-gateway-trxservices.php:279, includes/class-wc-gateway-trxservices.php:285
+msgid "There was a problem adding this card."
+msgstr ""
+
+#: includes/class-wc-gateway-trxservices.php:419
 msgid "Unable to process payment. Please try again."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:393
-msgid "On-Hold"
-msgstr ""
-
-#: includes/class-wc-gateway-trxservices.php:454
+#: includes/class-wc-gateway-trxservices.php:509
 msgid "Unable to refund order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:462
+#: includes/class-wc-gateway-trxservices.php:517
 msgid "Order refunded via TrxServices."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:463
+#: includes/class-wc-gateway-trxservices.php:518
 msgid "Refunded %s (GUID: %s)"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:468
+#: includes/class-wc-gateway-trxservices.php:523
 msgid "TrxServices order #%s refunded."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:513
+#: includes/class-wc-gateway-trxservices.php:568
 msgid "Unable to void previous credit capture or sale for order %d via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:521
+#: includes/class-wc-gateway-trxservices.php:576
 msgid "Voided a previous credit capture or sale via TrxServices."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:522
+#: includes/class-wc-gateway-trxservices.php:577
 msgid "Voided a previous credit capture or sale via TrxServices %s (GUID: %s)"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:574
+#: includes/class-wc-gateway-trxservices.php:629
 msgid "Unable to capture payment for order %s via TrxServices (GUID: %s ResponseCode: %s ResponseText: %s)"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:582
+#: includes/class-wc-gateway-trxservices.php:637
 msgid "Payment captured via TrxServices."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:583
+#: includes/class-wc-gateway-trxservices.php:638
 msgid "TrxServices Credit Capture %s (GUID: %s)"
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:650
+#: includes/class-wc-trxservices-api.php:178
 msgid "Unable to connect to TrxServices. Please try again."
 msgstr ""
 
-#: includes/class-wc-gateway-trxservices.php:654
+#: includes/class-wc-trxservices-api.php:182
 msgid "%s"
 msgstr ""
 
@@ -187,34 +206,82 @@ msgstr ""
 msgid "Place the payment gateway in sandbox mode (real payments will not be taken)."
 msgstr ""
 
-#: includes/settings-trxservices.php:61
+#: includes/settings-trxservices.php:54
+msgid "Sandbox Credentials"
+msgstr ""
+
+#: includes/settings-trxservices.php:59
+msgid "Sandbox Algorithm"
+msgstr ""
+
+#: includes/settings-trxservices.php:64
+msgid "Sandbox Algorithm Mode"
+msgstr ""
+
+#: includes/settings-trxservices.php:69
+msgid "Sandbox Algorithm Key"
+msgstr ""
+
+#: includes/settings-trxservices.php:74
+msgid "Sandbox Algorithm IV"
+msgstr ""
+
+#: includes/settings-trxservices.php:79
+msgid "Sandbox Client"
+msgstr ""
+
+#: includes/settings-trxservices.php:84
+msgid "Sandbox Source"
+msgstr ""
+
+#: includes/settings-trxservices.php:89
+msgid "Production Credentials"
+msgstr ""
+
+#: includes/settings-trxservices.php:94
+msgid "Production Algorithm"
+msgstr ""
+
+#: includes/settings-trxservices.php:99
+msgid "Production Algorithm Mode"
+msgstr ""
+
+#: includes/settings-trxservices.php:104
+msgid "Production Algorithm Key"
+msgstr ""
+
+#: includes/settings-trxservices.php:109
+msgid "Production Algorithm IV"
+msgstr ""
+
+#: includes/settings-trxservices.php:114
+msgid "Production Client"
+msgstr ""
+
+#: includes/settings-trxservices.php:119
+msgid "Production Source"
+msgstr ""
+
+#: includes/settings-trxservices.php:131
 msgid "Credit Sale"
 msgstr ""
 
-#: includes/settings-trxservices.php:62
+#: includes/settings-trxservices.php:132
 msgid "Credit Auth"
 msgstr ""
 
-#: woocommerce-trxservices.php:130, woocommerce-trxservices.php:142
-msgid "Cheatin&#8217; huh?"
+#: includes/admin/views/admin-options.php:5
+msgid "Getting started"
 msgstr ""
 
-#: woocommerce-trxservices.php:190
-msgid "Payment Settings"
+#: includes/admin/views/admin-options.php:6
+msgid "TrxServices is an advanced provider of debit card and credit card acceptance in the U.S. dedicated exclusively to the small-to-medium merchant market."
 msgstr ""
 
-#: woocommerce-trxservices.php:212
-msgid "Documentation"
+#: includes/admin/views/admin-options.php:9
+msgid "Sign up for TrxServices"
 msgstr ""
 
-#: woocommerce-trxservices.php:332
-msgid "WooCommerce %s depends on version 2.2 and up of WooCommerce for this gateway to work! Please upgrade before activating."
-msgstr ""
-
-#: woocommerce-trxservices.php:393
-msgid "Capture payment"
-msgstr ""
-
-#: woocommerce-trxservices.php:396
-msgid "Void payment"
+#: includes/admin/views/admin-options.php:10
+msgid "Learn more"
 msgstr ""
