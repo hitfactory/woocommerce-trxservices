@@ -2,15 +2,16 @@
 /*
  * Plugin Name:       WooCommerce TrxServices
  * Description:       TrxServices payment gateway for WooCommerce.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            The Hit Factory
- * Author URI:        http://hitfactory.co.nz
+ * Author URI:        https://hitfactory.co.nz
+ * WC requires at least: 3.0
  * Text Domain:       woocommerce-trxservices
  * Domain Path:       /languages
  * License:           GPLv2 or later
  *
- * WooCommerce TrxServices is distributed under the terms of the 
- * GNU General Public License as published by the Free Software Foundation, 
+ * WooCommerce TrxServices is distributed under the terms of the
+ * GNU General Public License as published by the Free Software Foundation,
  * either version 2 of the License, or any later version.
  *
  * WooCommerce TrxServices is distributed in the hope that it will be useful,
@@ -29,6 +30,8 @@ if ( ! defined( 'ABSPATH' ) ) {
   exit; // Exit if accessed directly
 }
 
+define( 'WC_TRXSERVICES_VERSION', '1.1.0' );
+
 /**
  * Required functions
  */
@@ -40,7 +43,7 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
    * WooCommerce TrxServices main class.
    *
    * @class   WC_TrxServices
-   * @version 1.0.0
+   * @version 1.1.0
    */
   final class WC_TrxServices {
 
@@ -83,7 +86,7 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
      * @access public
      * @var    string
      */
-    public $version = '1.0.0';
+    public $version = '1.1.0';
 
     /**
      * The Gateway URL.
@@ -158,16 +161,31 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
         add_action('admin_notices', array( $this, 'woocommerce_missing_notice' ) );
         return false;
       }
-      else{
+      else {
         // Check we have the minimum version of WooCommerce required before loading the gateway.
-        if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '2.2', '>=' ) ) {
-          if ( class_exists( 'WC_Payment_Gateway' ) ) {
+        if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '3.0.0', '>=' ) ) {
+          if ( class_exists( 'WC_Payment_Gateway_CC' ) ) {
 
             $this->includes();
 
-            add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateway' ) );
+            include_once( 'includes/class-wc-' . str_replace( '_', '-', $this->gateway_slug ) . '-api.php' );
+            include_once( 'includes/class-wc-gateway-' . str_replace( '_', '-', $this->gateway_slug ) . '.php' );
+
+            if ( class_exists( 'WC_Subscriptions_Order' )) {
+              include_once( 'includes/class-wc-gateway-' . str_replace( '_', '-', $this->gateway_slug ) . '-addons.php' );
+            }
+
+            add_filter( 'woocommerce_payment_gateways', array( $this, 'add_gateways' ) );
             add_filter( 'woocommerce_currencies', array( $this, 'add_currency' ) );
             add_filter( 'woocommerce_currency_symbol', array( $this, 'add_currency_symbol' ), 10, 2 );
+
+            add_action( 'rest_api_init', function () {
+              register_rest_route( 'wc-trxservices/v1', '/card', array(
+                'methods' => 'POST',
+                'callback' => array( 'WC_TrxServices_API', 'handle_card' )
+              ) );
+            } );
+
           }
         }
         else {
@@ -220,7 +238,7 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
     /**
      * Load Localisation files.
      *
-     * Note: the first-loaded translation file overrides any 
+     * Note: the first-loaded translation file overrides any
      * following ones if the same translation is present.
      *
      * @access public
@@ -260,12 +278,10 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
     private function includes() {
 
       // @TODO: Switch to https://github.com/defuse/php-encryption.
-      // Helper encryption classes. 
+      // Helper encryption classes.
       include_once( 'includes/lib/AES.php' );
       include_once( 'includes/lib/AES_Encryption.php' );
       include_once( 'includes/lib/padCrypt.php' );
-      
-      include_once( 'includes/class-wc-gateway-' . str_replace( '_', '-', $this->gateway_slug ) . '.php' );
     }
 
     /**
@@ -284,10 +300,15 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
      * @param  array $methods WooCommerce payment methods.
      * @return array WooCommerce TrxServices gateway.
      */
-    public function add_gateway( $methods ) {
+    public function add_gateways( $methods ) {
       // This checks if the gateway is supported for your country.
       if ( in_array( WC()->countries->get_base_country(), $this->gateway_country_base() ) ) {
-        $methods[] = 'WC_Gateway_' . str_replace( ' ', '_', $this->name );
+        if ( class_exists( 'WC_Subscriptions_Order' ) && function_exists( 'wcs_create_renewal_order' ) ) {
+          $methods[] = 'WC_Gateway_' . str_replace( ' ', '_', $this->name ) . '_Addons';
+        }
+        else {
+          $methods[] = 'WC_Gateway_' . str_replace( ' ', '_', $this->name );
+        }
       }
       return $methods;
     }
@@ -329,7 +350,7 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
      * @return string
      */
     public function upgrade_notice() {
-      echo '<div class="updated woocommerce-message wc-connect"><p>' . sprintf( __( 'WooCommerce %s depends on version 2.2 and up of WooCommerce for this gateway to work! Please upgrade before activating.', 'woocommerce-trxservices' ), $this->name ) . '</p></div>';
+      echo '<div class="updated woocommerce-message wc-connect"><p>' . sprintf( __( 'WooCommerce %s depends on version 3.0.0 and up of WooCommerce for this gateway to work! Please upgrade before activating.', 'woocommerce-trxservices' ), $this->name ) . '</p></div>';
     }
 
     /** Helper functions ******************************************************/
@@ -357,8 +378,7 @@ if ( !class_exists( 'WC_TrxServices' ) ) {
   } // end class
 
   add_action( 'plugins_loaded', array( 'WC_TrxServices', 'get_instance' ), 0 );
-  
-  // Here because these actions don't get loaded from the payment gateway class.
+
   add_action( 'woocommerce_order_actions', 'add_order_actions' );
   add_action( 'woocommerce_order_action_trxservices_creditcapture', 'woocommerce_trxservices_creditcapture');
   add_action( 'woocommerce_order_action_trxservices_creditvoid', 'woocommerce_trxservices_creditvoid');
@@ -394,16 +414,16 @@ function add_order_actions($actions) {
       break;
     case 'processing':
       $actions['trxservices_creditvoid'] = __( 'Void payment', 'woocommerce-trxservices' );
-      break;  
+      break;
   }
   return $actions;
 }
 
 /**
  * Perform a Credit Capture transaction.
- * 
+ *
  * @param  WC_Order $order WooCommerce order
- * @return bool     
+ * @return bool
  */
 function woocommerce_trxservices_creditcapture($order) {
   $trxservices = wc_gateway_trxservices();
@@ -412,9 +432,9 @@ function woocommerce_trxservices_creditcapture($order) {
 
  /**
  * Perform a Credit Void transaction.
- * 
+ *
  * @param  WC_Order $order WooCommerce order
- * @return bool     
+ * @return bool
  */
 function woocommerce_trxservices_creditvoid($order) {
   $trxservices = wc_gateway_trxservices();
