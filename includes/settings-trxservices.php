@@ -81,7 +81,7 @@ return array(
     'default'     => '',
   ),
   'sandbox_source' => array(
-    'title'       => __( 'Sandbox Source', 'woocommerce-trxservices' ),
+    'title'       => __( 'Sandbox Source ID', 'woocommerce-trxservices' ),
     'type'        => 'text',
     'default'     => '',
   ),
@@ -116,7 +116,7 @@ return array(
     'default'     => '',
   ),
   'source' => array(
-    'title'       => __( 'Production Source', 'woocommerce-trxservices' ),
+    'title'       => __( 'Production Source ID', 'woocommerce-trxservices' ),
     'type'        => 'text',
     'default'     => '',
   ),
