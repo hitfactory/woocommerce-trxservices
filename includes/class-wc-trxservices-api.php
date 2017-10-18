@@ -267,6 +267,8 @@ class WC_TrxServices_API {
    * @return string $storage_safe_token  StorageSafe token
    */
   public static function storage_safe_insert( $card ) {
+    $expMonth = str_pad( $card['expMonth'], 2, '0', STR_PAD_LEFT );
+    $expiration = $expMonth . $card['expYear'];
     $data = array(
       'Detail' => array(
         'TranType' => 'StorageSafe',
@@ -274,7 +276,7 @@ class WC_TrxServices_API {
       ),
       'Account' => array(
         'Pan' => $card['number'],
-        'Expiration' => $card['expMonth'] . $card['expYear'],
+        'Expiration' => $expiration,
       ),
     );
     $result = self::do_request($data);
