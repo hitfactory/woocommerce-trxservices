@@ -76,7 +76,7 @@ return array(
     'default'     => '',
   ),
   'sandbox_client' => array(
-    'title'       => __( 'Sandbox Client', 'woocommerce-trxservices' ),
+    'title'       => __( 'Sandbox Client ID', 'woocommerce-trxservices' ),
     'type'        => 'text',
     'default'     => '',
   ),
@@ -111,7 +111,7 @@ return array(
     'default'     => '',
   ),
   'client' => array(
-    'title'       => __( 'Production Client', 'woocommerce-trxservices' ),
+    'title'       => __( 'Production Client ID', 'woocommerce-trxservices' ),
     'type'        => 'text',
     'default'     => '',
   ),
