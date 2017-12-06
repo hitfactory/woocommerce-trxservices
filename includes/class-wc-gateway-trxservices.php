@@ -422,7 +422,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway_CC {
     }
 
     // Store GUID as transaction ID.
-    add_post_meta( $order->get_id(), '_transaction_id', $guid, true );
+    update_post_meta( $order->get_id(), '_transaction_id', $guid );
 
     // Store transaction type.
     update_post_meta( $order->get_id(), '_trxservices_transaction_type', 'Credit ' . $this->mode );
