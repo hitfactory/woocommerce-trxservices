@@ -273,6 +273,7 @@ class WC_TrxServices_API {
       'Detail' => array(
         'TranType' => 'StorageSafe',
         'TranAction' => 'Insert',
+        'Ip' => WC_Geolocation::get_ip_address(),
       ),
       'Account' => array(
         'Pan' => $card['number'],

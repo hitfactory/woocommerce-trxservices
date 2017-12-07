@@ -351,6 +351,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway_CC {
         'TranAction' => $this->mode, // Either Sale or Auth
         'CurrencyCode' => 840, // USD
         'Amount' => $order->get_total(),
+        'Ip' => WC_Geolocation::get_ip_address(),
       ),
       'IndustryData' => array(
         'Industry' => 'CardNotPresent',
@@ -488,6 +489,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway_CC {
         'TranAction' => $tran_action,
         'CurrencyCode' => 840, // USD
         'Amount' => $amount,
+        'Ip' => WC_Geolocation::get_ip_address(),
       ),
       'Reference' => array(
         'Guid' => $guid,
@@ -547,6 +549,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway_CC {
       'Detail' => array(
         'TranType' => 'Credit',
         'TranAction' => 'Void',
+        'Ip' => WC_Geolocation::get_ip_address(),
       ),
       'Reference' => array(
         'Guid' => $guid,
@@ -608,6 +611,7 @@ class WC_Gateway_TrxServices extends WC_Payment_Gateway_CC {
         'TranAction' => 'Capture',
         'CurrencyCode' => 840, // USD
         'Amount' => $order->order_total,
+        'Ip' => WC_Geolocation::get_ip_address(),
       ),
       'Reference' => array(
         'Guid' => $guid,

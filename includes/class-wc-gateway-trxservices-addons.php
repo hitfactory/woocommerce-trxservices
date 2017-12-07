@@ -166,6 +166,7 @@ class WC_Gateway_TrxServices_Addons extends WC_Gateway_TrxServices {
         'TranAction' => $this->mode, // Either Sale or Auth
         'CurrencyCode' => 840, // USD
         'Amount' => $amount,
+        'Ip' => WC_Geolocation::get_ip_address(),
       ),
       'StorageSafe' => array(
         'Guid' => $storage_safe_token,
